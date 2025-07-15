@@ -1,0 +1,201 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+.font1 {
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+/* .font2 {
+    font-family: "Orbitron", sans-serif !important;
+
+} */
+
+.slider-container {
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.slider {
+    display: flex;
+    animation: scroll-left 15s linear infinite;
+}
+
+.slide {
+    flex: 0 0 auto;
+    width: 8rem;
+    height: 2.5rem;
+    padding: 0.5rem;
+}
+
+@keyframes scroll-left {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #6e668c;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+
+@layer utilities {
+  @keyframes slide-left {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes slide-right {
+    0% {
+      transform: translateX(-50%);
+    }
+    100% {
+      transform: translateX(0%);
+    }
+  }
+
+  .animate-slide-left {
+    animation: slide-left 30s linear infinite;
+  }
+
+  .animate-slide-right {
+    animation: slide-right 30s linear infinite;
+  }
+}
+ 
+/* ye right ki taraf scrolling  */
+.scroll-right {
+  animation: slideRight 30s linear infinite;
+}
+
+@keyframes slideRight {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+
+/* animation */
+@keyframes float1 {
+    0% { transform: translateX(0) translateY(0) rotate(0deg); }
+    25% { transform: translateX(40vw) translateY(-10vh) rotate(90deg); }
+    50% { transform: translateX(0vw) translateY(-20vh) rotate(180deg); }
+    75% { transform: translateX(-40vw) translateY(-10vh) rotate(270deg); }
+    100% { transform: translateX(0) translateY(0) rotate(360deg); }
+  }
+  
+  @keyframes float2 {
+    0% { transform: translateX(0) translateY(0) rotate(0deg); }
+    20% { transform: translateX(-30vw) translateY(-15vh) rotate(60deg); }
+    50% { transform: translateX(0vw) translateY(-30vh) rotate(180deg); }
+    80% { transform: translateX(30vw) translateY(-15vh) rotate(300deg); }
+    100% { transform: translateX(0) translateY(0) rotate(360deg); }
+  }
+  
+  @keyframes float3 {
+    0% { transform: translateX(0) translateY(0) rotate(0deg); }
+    33% { transform: translateX(20vw) translateY(-20vh) rotate(120deg); }
+    66% { transform: translateX(-20vw) translateY(-20vh) rotate(240deg); }
+    100% { transform: translateX(0) translateY(0) rotate(360deg); }
+  }
+  
+  .coin-float {
+    position: absolute;
+    z-index: 0;
+    opacity: 20;
+  }
+  
+  .coin1 {
+    top: 10%;
+    left: 10%;
+    width:  8rem;
+    height: 8rem;
+    animation: float1 20s linear infinite;
+  }
+  
+  .coin2 {
+    top: 30%;
+    right: 15%;
+     width:  8rem;
+    height: 8rem;
+    opacity: 5;
+    animation: float2 25s linear infinite;
+  }
+  
+  .coin3 {
+    bottom: 15%;
+    left: 25%;
+    width: 60px;
+    height: 60px;
+    opacity: 2;
+    animation: float3 22s linear infinite;
+  }
+  
+/* Swiper Custom Styles */
+.overview-swiper .swiper-button-next,
+.overview-swiper .swiper-button-prev {
+  color: #ec4899 !important;
+}
+
+.overview-swiper .swiper-pagination-bullet {
+  background: #ec4899 !important;
+}
+
+.overview-swiper .swiper-pagination-bullet-active {
+  background: #ec4899 !important;
+}
+
+.overview-swiper .swiper-button-next:after,
+.overview-swiper .swiper-button-prev:after {
+  font-size: 20px !important;
+}
+
+.overview-swiper .swiper-pagination {
+  bottom: 10px !important;
+}
+  
+
+.recharts-pie-sector:focus {
+  outline: none !important;
+}
+
+.recharts-pie-sector:active {
+  outline: none !important;
+  stroke: none !important;
+}
+
+.recharts-pie-sector {
+  outline: none !important;
+}
+.chart-container .recharts-pie-sector {
+  outline: none !important;
+}

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/logo.png" />
+
+  <!-- Viewport for responsive scaling -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Primary SEO Meta Tags -->
+  <title>XIOVM Secure, fast crypto transactions and multi-chain wallet support </title>
+  <meta name="description" content="XIOVM Secure, fast crypto transactions and multi-chain wallet support" />
+  <meta name="keywords" content="XIOVM, crypto wallet, blockchain, PWA, multi-chain" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://xiocoin.io/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://xiocoin.io/" />
+  <meta property="og:title" content="XIO-Multi-Chain Crypto Wallet" />
+  <meta property="og:description"
+    content="Manage and swap tokens across Ethereum, BSC, Solana, and more—all in one place." />
+  <meta property="og:image" content="https://xiocoin.io/logo.png" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://xiocoin.io/" />
+  <meta name="twitter:title" content="XIO Multi-Chain Crypto Wallet" />
+  <meta name="twitter:description"
+    content="Manage and swap tokens across Ethereum, BSC, Solana, and more—all in one place." />
+  <meta name="twitter:image" content="https://xiocoin.org/logo.png" />
+
+  <!-- PWA: Manifest & Theme Color -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#050018" />
+
+  <!-- iOS support -->
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Safari splash screens (optional, sizes vary) -->
+  <!--
+    <link rel="apple-touch-startup-image" href="/splash/apple-splash-2048-2732.png" media="(device-width: 1024px) and (device-height: 1366px)" />
+    ... repeat for other resolutions ...
+    -->
+
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+
+  <!-- Register service worker for PWA offline support -->
+   <!-- Register service worker for PWA offline support -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(reg => console.log('SW registered:', reg))
+            .catch(err => console.error('SW registration failed:', err));
+        });
+      }
+    </script>
+</body>
+
+</html>
