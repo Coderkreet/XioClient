@@ -114,7 +114,9 @@ const TokenomicsSection = () => {
           transactionsChange: tracker.transactionsChange || '',
           circulatingSupply: tracker.circulatingSupply || '',
           totalSupply: tracker.totalSupply || '',
-          BurnedToken: tracker.BurnedToken || ''
+          BurnedToken: tracker.BurnedToken || '',
+          maxSupply : tracker.maxSupply  || '',
+
         });
       } else {
         setTokenTracker(null);
@@ -125,7 +127,8 @@ const TokenomicsSection = () => {
           transactionsChange: '',
           circulatingSupply: '',
           totalSupply: '',
-          BurnedToken: ''
+          BurnedToken: '',
+          maxSupply : ''
         });
       }
     } catch {
@@ -311,7 +314,8 @@ const TokenomicsSection = () => {
       transactionsChange: '',
       circulatingSupply: '',
       totalSupply: '',
-      BurnedToken: ''
+      BurnedToken: '',
+      maxSupply : ''
     });
     setTokenTrackerError('');
     setTokenTrackerSuccess('');
@@ -425,6 +429,7 @@ const TokenomicsSection = () => {
               <div><span className="text-purple-400 font-bold">Circulating Supply:</span> <span className="text-white">{tokenTracker.circulatingSupply}</span></div>
               <div><span className="text-purple-400 font-bold">Total Supply:</span> <span className="text-white">{tokenTracker.totalSupply}</span></div>
               <div><span className="text-purple-400 font-bold">Burned Token:</span> <span className="text-white">{tokenTracker.BurnedToken}</span></div>
+              <div><span className="text-purple-400 font-bold">Max Supply</span> <span className="text-white">{tokenTracker.maxSupply }</span></div>
             </div>
             <div className="flex gap-2">
               <button onClick={handleTokenTrackerEdit} className="bg-blue-500 text-white px-3 py-1 rounded shadow hover:bg-blue-600">Edit</button>
@@ -466,6 +471,10 @@ const TokenomicsSection = () => {
                   <label className="block text-white mb-1">Burned Token</label>
                   <input type="number" className="w-full bg-black border border-gray-700 rounded px-3 py-2 text-white" placeholder="Burned Token" value={tokenTrackerForm.BurnedToken} onChange={e => handleTokenTrackerInputChange('BurnedToken', e.target.value)} required />
                 </div>
+                <div>
+                  <label className="block text-white mb-1">Max Supply</label>
+                  <input type="number" className="w-full bg-black border border-gray-700 rounded px-3 py-2 text-white" placeholder="Max Supply" value={tokenTrackerForm.maxSupply} onChange={e => handleTokenTrackerInputChange('maxSupply', e.target.value)} required />
+                  </div>
               </div>
               <div className="flex gap-2 mt-6 justify-end">
                 <button type="submit" disabled={tokenTrackerLoading} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow flex items-center space-x-1 disabled:opacity-50">

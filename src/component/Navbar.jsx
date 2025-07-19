@@ -163,7 +163,7 @@ const Navbar = () => {
             isOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
           } overflow-hidden`}
         >
-          <div className="bg-gray-800/95 backdrop-blur-lg border-t border-gray-700">
+          <div className="bg-[#460a3d98] backdrop-blur-lg border-t border-gray-700">
             <div className="px-4 py-6 space-y-3">
               {navItems.map((item) => {
                 const id = item.path.replace('#', '');

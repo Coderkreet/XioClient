@@ -550,7 +550,8 @@ useEffect(() => {
               Max Supply
             </p>
             <p className="text-white font-bold break-words whitespace-normal">
-              1234567890
+                            {tokenTrackers.maxSupply.toLocaleString()}
+
             </p>
           </div>
         </div>

@@ -11,6 +11,8 @@ const PrivacyPolicy = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+    const [updatedAt, setUpdatedAt] = useState("");
+  
   useEffect(() => {
     // Always scroll to top on mount
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -51,6 +53,9 @@ const PrivacyPolicy = () => {
           Array.isArray(res.data[0].privacyPolicy)
         ) {
           setSections(res.data[0].privacyPolicy);
+            if (res.data[0].updatedAt) {
+            setUpdatedAt(res.data[0].updatedAt);
+          }
         } else {
           setSections([]);
         }
@@ -128,9 +133,9 @@ const PrivacyPolicy = () => {
           <p className="text-xl md:text-2xl text-[#727FA6] max-w-4xl mx-auto leading-relaxed mb-8">
             How we collect, use, and protect your information on the XIO Platform. Please review our privacy practices.
           </p>
-          {/* <div className="text-sm text-gray-400">
-            Last updated: January 2025
-          </div> */}
+          <div className="text-sm text-gray-400">
+            Last updated: {updatedAt ? new Date(updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'January 2025'}
+          </div>
         </div>
       </div>
 

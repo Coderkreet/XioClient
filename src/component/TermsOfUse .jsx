@@ -10,6 +10,7 @@ const TermsOfUse = () => {
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [updatedAt, setUpdatedAt] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,6 +52,9 @@ const TermsOfUse = () => {
         const res = await getAllTermsAndConditions();
         if (res && res.data && Array.isArray(res.data) && res.data.length > 0 && Array.isArray(res.data[0].termCondition)) {
           setSections(res.data[0].termCondition);
+          if (res.data[0].updatedAt) {
+            setUpdatedAt(res.data[0].updatedAt);
+          }
         } else {
           setSections([]);
         }
@@ -131,9 +135,9 @@ const TermsOfUse = () => {
           <p className="text-xl md:text-2xl text-[#727FA6] max-w-4xl mx-auto leading-relaxed mb-8">
             Your agreement to use XIO Platform services. Please read these terms carefully.
           </p>
-          {/* <div className="text-sm text-gray-400">
-            Last updated: January 2025
-          </div> */}
+          <div className="text-sm text-gray-400">
+            Last updated: {updatedAt ? new Date(updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'January 2025'}
+          </div>
         </div>
       </div>
 

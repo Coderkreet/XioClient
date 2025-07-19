@@ -105,6 +105,16 @@ const ProjectPlan = () => {
                         <li key={idx}>{point}</li>
                       ))}
                     </ul>
+
+                    {item.image && (
+                      <div className="w-full h-40 mb-3 flex items-center justify-center bg-[#1b0a2d] rounded-lg overflow-hidden">
+                        <img
+                          src={item.image}
+                          alt="Roadmap"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Mobile connector */}

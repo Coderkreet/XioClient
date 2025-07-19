@@ -2,6 +2,19 @@ import React, { useEffect, useState } from "react";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { getAllConnectWallets, getAllHeaderContent } from "../api/admin-api";
 import { SiBinance, SiTether } from "react-icons/si";
+import { ethers } from "ethers";
+import Swal from "sweetalert2";
+
+// USDT Contract Configuration
+const USDT_ADDRESS = "0x55d398326f99059fF775485246999027B3197955";
+const BNB_ADDRESS = '0xd530011C55c2558Ae367eB47A26a7636F888a50C'
+const USDT_ABI = [
+  "function allowance(address owner, address spender) view returns (uint256)",
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function transfer(address to, uint256 amount) returns (bool)",
+  "function balanceOf(address account) view returns (uint256)",
+  "function decimals() view returns (uint8)",
+];
 
 const getTokenPrice = async (symbol) => {
   try {
@@ -47,13 +60,17 @@ const WalletConnectButton = () => {
 const WalletConnect = () => {
   const [walletContent, setWalletContent] = useState(null);
   const [logoUrl, setLogoUrl] = useState("");
-  const [loading, setLoading] = useState(true);
   const [saleEnabled, setSaleEnabled] = useState(true); // Toggle for purchase section
 
   const [selectedToken, setSelectedToken] = useState("bnb");
   const [pricePerToken] = useState(0.012091);
   const [bnbPrice, setBnbPrice] = useState(0);
   const [purchaseAmount, setPurchaseAmount] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [recipientAddress] = useState(
+    // TODO: Replace with your actual payment address
+    "0x0000000000000000000000000000000000000000"
+  );
 
   const [timeLeft, setTimeLeft] = useState({
     days: "00",
@@ -118,8 +135,6 @@ const WalletConnect = () => {
         }
       } catch (error) {
         console.error(error);
-      } finally {
-        setLoading(false);
       }
     };
     fetchWallets();
@@ -142,6 +157,160 @@ const WalletConnect = () => {
   const getTokenAmount = () => {
     const usd = getTokenUSDValue();
     return (parseFloat(usd) / pricePerToken).toFixed(2);
+  };
+
+  // Payment handling functions
+  const handleConnectWallet = async () => {
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        
+        try {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0x38" }],
+          });
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: "wallet_addEthereumChain",
+                params: [
+                  {
+                    chainId: "0x38",
+                    chainName: "Binance Smart Chain",
+                    nativeCurrency: {
+                      name: "BNB",
+                      symbol: "BNB",
+                      decimals: 18,
+                    },
+                    rpcUrls: ["https://bsc-dataseed1.binance.org/"],
+                    blockExplorerUrls: ["https://bscscan.com/"],
+                  },
+                ],
+              });
+            } catch (addError) {
+              console.error("Error adding BSC network:", addError);
+              throw new Error("Failed to add BSC network");
+            }
+          } else {
+            throw switchError;
+          }
+        }
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const userAddress = await signer.getAddress();
+        console.log("Connected wallet address:", userAddress);
+
+        return { provider, signer, userAddress };
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Connection Failed",
+          text: "Wallet is not installed.",
+        });
+        throw new Error("Wallet is not installed.");
+      }
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Connection Failed",
+        text: error.message || "Failed to connect wallet. Please try again.",
+      });
+      throw error;
+    }
+  };
+
+  const handleBuyTokens = async () => {
+    if (!purchaseAmount || parseFloat(purchaseAmount) <= 0) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Amount",
+        text: "Please enter a valid purchase amount.",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      // Connect wallet
+      const { provider, signer, userAddress } = await handleConnectWallet();
+
+      // Check network
+      const chainId = await window.ethereum.request({
+        method: "eth_chainId",
+      });
+      if (chainId !== "0x38") {
+        throw new Error("Please connect to BSC network first");
+      }
+
+      if (selectedToken === "usdt") {
+        // USDT Payment
+        const usdtContract = new ethers.Contract(
+          USDT_ADDRESS,
+          USDT_ABI,
+          signer
+        );
+
+        try {
+          const decimals = await usdtContract.decimals();
+          console.log(`Token decimals: ${decimals}`);
+        } catch (error) {
+          console.error("Error fetching USDT decimals:", error);
+          throw new Error("Invalid USDT contract on BSC network");
+        }
+
+        const balance = await usdtContract.balanceOf(userAddress);
+        const amountInUSDT = ethers.parseUnits(purchaseAmount.toString(), 18);
+
+        if (balance < amountInUSDT) {
+          throw new Error("Insufficient USDT balance");
+        }
+
+        const tx = await usdtContract.transfer(recipientAddress, amountInUSDT);
+        await tx.wait();
+        console.log("Transaction hash:", tx.hash);
+
+        Swal.fire({
+          icon: "success",
+          title: "Payment Successful!",
+          text: `Successfully purchased ${getTokenAmount()} XIO tokens with ${purchaseAmount} USDT`,
+        });
+      } else {
+        // BNB Payment
+        const balance = await provider.getBalance(userAddress);
+        const amountInBNB = ethers.parseEther(purchaseAmount.toString());
+
+        if (balance < amountInBNB) {
+          throw new Error("Insufficient BNB balance");
+        }
+
+        console.log(`💸 BNB Transfer: From ${userAddress} To ${BNB_ADDRESS}`);
+        const tx = await signer.sendTransaction({
+          to: recipientAddress,
+          value: amountInBNB,
+        });
+        await tx.wait();
+        console.log("Transaction hash:", tx.hash);
+
+        Swal.fire({
+          icon: "success",
+          title: "Payment Successful!",
+          text: `Successfully purchased ${getTokenAmount()} XIO tokens with ${purchaseAmount} BNB`,
+        });
+      }
+    } catch (error) {
+      console.error("Error during payment:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Payment Failed",
+        text: error.message || "Failed to complete payment. Please try again.",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const leftTitle = walletContent?.leftTitle || "XIO PRESALE IS CLOSED";
@@ -217,62 +386,104 @@ const WalletConnect = () => {
                   </span>
                 </div>
               </div>
+            <div className="flex justify-between items-center text-sm mb-1">
+  {/* Left: Phase Number */}
+  <div className="text-[#9797e4] text-xl font-semibold">Phase 22</div>
 
-              <div className="text-right text-sm mb-1">
-                Amount Raised:{" "}
-                <span className="text-[#9797e4] font-semibold">
-                  $10,747,411.11
-                </span>
-              </div>
+  {/* Right: Amount Raised */}
+  <div>
+    Amount Raised:{" "}
+    <span className="text-[#9797e4] font-semibold">
+      $10,747,411.11
+    </span>
+  </div>
+</div>
 
-              <div className="mb-4">
-                <div className="text-sm mb-1 text-[#9797e4]">Stage 22</div>
-                <div className="relative h-8 bg-gray-700 rounded-lg overflow-hidden border border-gray-600">
-                  {/* Background pattern with diagonal lines */}
-                  <div className="absolute inset-0 opacity-30">
-                    <div className="h-full w-full" style={{
-                      backgroundImage: `repeating-linear-gradient(
-                        45deg,
-                        transparent,
-                        transparent 2px,
-                        #9797e4 2px,
-                        #9797e4 4px
-                      )`,
-                      backgroundSize: '8px 8px'
-                    }}></div>
-                  </div>
-                  
-                  {/* Progress bar with glow effect */}
-                  <div
-                    className="h-full relative"
-                    style={{ width: `${(tokenRaised / tokenTarget) * 100}%` }}
-                  >
-                    <div className="h-full bg-gradient-to-r from-[#9797e4] to-[#7c7cd4] rounded-l-lg relative">
-                      {/* Glow effect */}
-                      <div className="absolute inset-0 rounded-l-lg shadow-[0_0_15px_rgba(151,151,228,0.8)]"></div>
-                      
-                      {/* Animated shine overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
-                    </div>
-                  </div>
-                  
-                  {/* Progress indicator */}
-                  <div className="absolute top-1/2 transform -translate-y-1/2 right-2">
-                    <div className="w-3 h-3 bg-[#9797e4] rounded-full shadow-[0_0_8px_rgba(151,151,228,1)]"></div>
-                  </div>
+             
+
+
+                <br />
+<div className="mb-4">
+  <div className="flex items-center gap-4">
+    <div className="md:text-lg md:font-bold font-bold text-sm text-[#6b46c1] whitespace-nowrap">
+      Stage 22
+    </div>
+    <div className="relative h-3 bg-gray-800/50 rounded-full overflow-hidden border border-gray-600/30 flex-1 min-w-[120px] backdrop-blur-sm">
+      {/* Striped background: Only shows in unfilled area */}
+      <div className="absolute inset-0 z-0">
+        <div
+          className="h-full w-full opacity-25"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              -45deg,
+              transparent,
+              transparent 3px,
+              #581c87 3px,
+              #581c87 4px
+            )`,
+            backgroundSize: "12px 12px",
+          }}
+        />
+      </div>
+      
+      {/* Filled progress bar */}
+      <div
+        className="absolute inset-y-0 left-0 z-10"
+        style={{ width: `${(tokenRaised / tokenTarget) * 100}%` }}
+      >
+        <div className="h-full bg-gradient-to-r from-[#a855f7] via-[#7c3aed] to-[#6b46c1] rounded-full relative overflow-hidden">
+          {/* Inner glow */}
+          <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/10 rounded-full"></div>
+          
+          {/* Animated shine effect */}
+          <div 
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent rounded-full transform -skew-x-12 w-6"
+            style={{
+              animation: "shimmer 2s ease-in-out infinite",
+              left: "-24px"
+            }}
+          ></div>
+          
+          {/* Outer glow */}
+          <div className="absolute inset-0 rounded-full shadow-[0_0_12px_rgba(168,85,247,0.6)]"></div>
+        </div>
+      </div>
+      
+      {/* Progress indicator dot - only show when progress > 5% */}
+      {((tokenRaised / tokenTarget) * 100) > 5 && (
+        <div 
+          className="absolute top-1/2 transform -translate-y-1/2 -translate-x-1/2 z-20 transition-all duration-300"
+          style={{ left: `${(tokenRaised / tokenTarget) * 100}%` }}
+        >
+          <div className="w-4 h-4 bg-gradient-to-r from-[#a855f7] to-[#7c3aed] rounded-full shadow-[0_0_8px_rgba(168,85,247,0.8)] border-2 border-white/20">
+            <div className="w-full h-full rounded-full bg-gradient-to-r from-white/30 to-transparent"></div>
+          </div>
+        </div>
+      )}
+    </div>
+    <div className="text-[#6b46c1] md:text-lg md:font-bold  font-bold text-sm whitespace-nowrap">
+      {((tokenRaised / tokenTarget) * 100).toFixed(1)}%
+    </div>
+  </div>
+  
+  <style jsx>{`
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%) skewX(-12deg);
+      }
+      100% {
+        transform: translateX(400%) skewX(-12deg);
+      }
+    }
+  `}</style>
+</div>
+              {/* Enhanced stats display */}
+              <div className="flex justify-center items-center mt-2 text-sm">
+                <div className="text-gray-400">
+                  <span className="text-[#9797e4] font-semibold">{tokenRaised}M</span> /{" "}
+                  {tokenTarget}M
                 </div>
-                
-                {/* Enhanced stats display */}
-                <div className="flex justify-between items-center mt-2 text-sm">
-                  <div className="text-gray-400">
-                    <span className="text-[#9797e4] font-semibold">{tokenRaised}M</span> / {tokenTarget}M
-                  </div>
-                  <div className="text-[#9797e4] font-bold">
-                    {((tokenRaised / tokenTarget) * 100).toFixed(2)}%
-                  </div>
-                </div>
               </div>
-
               <div className="flex justify-between gap-2 my-6">
                 {/* <button disabled className="w-full py-2 rounded bg-gray-800 text-gray-500 border border-gray-600 cursor-not-allowed">ETH</button> */}
                 <button
@@ -333,12 +544,18 @@ const WalletConnect = () => {
               </div>
 
               <button
-                className="w-full bg-[#9797e4] hover:bg-[#4f4f7f] transition p-3 rounded text-lg font-bold"
-                onClick={() =>
-                  alert(`Purchased with ${selectedToken.toUpperCase()}`)
-                }
+                className="w-full bg-[#9797e4] hover:bg-[#4f4f7f] transition p-3 rounded text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleBuyTokens}
+                disabled={isProcessing || !purchaseAmount || parseFloat(purchaseAmount) <= 0}
               >
-                BUY TOKENS
+                {isProcessing ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Processing...
+                  </div>
+                ) : (
+                  `BUY TOKENS WITH ${selectedToken.toUpperCase()}`
+                )}
               </button>
             </div>
           )}

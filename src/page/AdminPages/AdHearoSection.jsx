@@ -102,6 +102,15 @@ const AdHearoSection = () => {
     if (file) reader.readAsDataURL(file);
   };
 
+  // Delete image handler
+  const handleDeleteImage = (field) => {
+    if (field === 'logoImage') {
+      setForm(f => ({ ...f, floatingLogo: '', logoImage: '' }));
+    } else {
+      setForm(f => ({ ...f, [field]: '' }));
+    }
+  };
+
   const handleAuditReportLink = (value) => {
     setForm(f => ({ ...f, auditReport: value }));
   };
@@ -413,11 +422,20 @@ const AdHearoSection = () => {
                 />
                 <label htmlFor="logoImage" className="flex flex-col items-center justify-center">
                   {form.logoImage ? (
-                    <img
-                      src={form.logoImage}
-                      alt="Floating Logo Preview"
-                      className="w-32 h-32 object-contain rounded-lg mb-3 border border-gray-200"
-                    />
+                    <>
+                      <img
+                        src={form.logoImage}
+                        alt="Floating Logo Preview"
+                        className="w-32 h-32 object-contain rounded-lg mb-3 border border-gray-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteImage('logoImage')}
+                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors mb-2"
+                      >
+                        Delete
+                      </button>
+                    </>
                   ) : (
                     <div className="text-center">
                       <Upload className="w-8 h-8 text-[#AEA7D9] mb-2" />
@@ -447,11 +465,20 @@ const AdHearoSection = () => {
                 />
                 <label htmlFor="sideLogo" className="flex flex-col items-center justify-center">
                   {form.sideLogo ? (
-                    <img
-                      src={form.sideLogo}
-                      alt="Side Logo Preview"
-                      className="w-32 h-32 object-contain rounded-lg mb-3 border border-gray-200"
-                    />
+                    <>
+                      <img
+                        src={form.sideLogo}
+                        alt="Side Logo Preview"
+                        className="w-32 h-32 object-contain rounded-lg mb-3 border border-gray-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteImage('sideLogo')}
+                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors mb-2"
+                      >
+                        Delete
+                      </button>
+                    </>
                   ) : (
                     <div className="text-center">
                       <Upload className="w-8 h-8 text-[#AEA7D9] mb-2" />
@@ -481,11 +508,20 @@ const AdHearoSection = () => {
                 />
                 <label htmlFor="staticImage" className="flex flex-col items-center justify-center">
                   {form.staticImage ? (
-                    <img
-                      src={form.staticImage}
-                      alt="Static Image Preview"
-                      className="w-32 h-32 object-contain rounded-lg mb-3 border border-gray-200"
-                    />
+                    <>
+                      <img
+                        src={form.staticImage}
+                        alt="Static Image Preview"
+                        className="w-32 h-32 object-contain rounded-lg mb-3 border border-gray-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteImage('staticImage')}
+                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors mb-2"
+                      >
+                        Delete
+                      </button>
+                    </>
                   ) : (
                     <div className="text-center">
                       <Upload className="w-8 h-8 text-[#AEA7D9] mb-2" />
@@ -515,11 +551,20 @@ const AdHearoSection = () => {
                 />
                 <label htmlFor="navLogo" className="flex flex-col items-center justify-center">
                   {form.navLogo ? (
-                    <img
-                      src={form.navLogo}
-                      alt="Nav Logo Preview"
-                      className="w-32 h-32 object-contain rounded-lg mb-3 border border-gray-200"
-                    />
+                    <>
+                      <img
+                        src={form.navLogo}
+                        alt="Nav Logo Preview"
+                        className="w-32 h-32 object-contain rounded-lg mb-3 border border-gray-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteImage('navLogo')}
+                        className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors mb-2"
+                      >
+                        Delete
+                      </button>
+                    </>
                   ) : (
                     <div className="text-center">
                       <Upload className="w-8 h-8 text-[#AEA7D9] mb-2" />
@@ -561,6 +606,7 @@ const AdHearoSection = () => {
         </div>
       </form>
     </div>
+
   );
 };
 

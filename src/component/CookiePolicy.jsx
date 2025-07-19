@@ -11,6 +11,7 @@ const CookiePolicy = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [updatedAt, setUpdatedAt] = useState("");
 
   useEffect(() => {
     // Always scroll to top on mount
@@ -53,6 +54,9 @@ const CookiePolicy = () => {
           Array.isArray(res.data[0].cookiePolicy)
         ) {
           setSections(res.data[0].cookiePolicy);
+            if (res.data[0].updatedAt) {
+            setUpdatedAt(res.data[0].updatedAt);
+          }
         } else {
           setSections([]);
         }
@@ -130,9 +134,9 @@ const CookiePolicy = () => {
           <p className="text-xl md:text-2xl text-[#727FA6] max-w-4xl mx-auto leading-relaxed mb-8">
             How we use cookies and similar technologies on the XIO Platform. Please review our cookie practices.
           </p>
-          {/* <div className="text-sm text-gray-400">
-            Last updated: January 2025
-          </div> */}
+          <div className="text-sm text-gray-400">
+            Last updated: {updatedAt ? new Date(updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'January 2025'}
+          </div>
         </div>
       </div>
 
