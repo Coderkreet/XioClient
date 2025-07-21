@@ -75,6 +75,31 @@ const WalletConnect = () => {
   const [purchaseAmount, setPurchaseAmount] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  // Helper to close all modals and show a SweetAlert
+  const closeAllModals = (type, message) => {
+    setShowPaymentModal(false);
+    // If you have other modals like setShowWalletModal, close them here
+    // setShowWalletModal && setShowWalletModal(false);
+    if (type === 'success') {
+      Swal.fire({
+        icon: 'success',
+        title: 'Payment Successful',
+        text: message || 'Your payment was successful!',
+        confirmButtonText: 'OK',
+        timer: 5000,
+        showConfirmButton: true,
+      });
+    } else if (type === 'error') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Payment Failed',
+        text: message || 'Payment was rejected or failed.',
+        confirmButtonText: 'OK',
+        timer: 5000,
+        showConfirmButton: true,
+      });
+    }
+  };
   const [xioData, setXioData] = useState(null);
   const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [purchaseError, setPurchaseError] = useState(null);
@@ -359,30 +384,21 @@ const WalletConnect = () => {
         amount: getTokenAmount(),
         recipientAddress: data?.recipientAddress,
         userAddress: data?.userAddress,
-        // userAddress :"0xa51ab5d7a7554612B86DDcC7C7fF57abD172FdeE",
         txResponse: data?.txResponse,
       });
 
       if (res.success) {
         setPurchaseSuccess("Purchase successful!");
-        // fetchAllData();
-        setShowPaymentModal(false);
-        setShowWalletModal(false);
-        Swal.fire({
-          icon: "success",
-          title: "Purchase Successful",
-          text: `You have successfully purchased ${amount} XPFI Coin.`,
-          confirmButtonText: "OK",
-          timer: 5000,
-          showConfirmButton: true,
-        });
         setPurchaseAmount("");
+        closeAllModals('success', `You have successfully purchased ${getTokenAmount()} XPFI Coin.`);
       } else {
         setPurchaseError(res.message || "Purchase failed.");
+        closeAllModals('error', res.message || "Purchase failed.");
       }
     } catch (err) {
       console.error(err);
       setPurchaseError("An error occurred during purchase.");
+      closeAllModals('error', "An error occurred during purchase.");
     } finally {
       setPurchaseLoading(false);
     }
@@ -675,7 +691,6 @@ const WalletConnect = () => {
 
               <button
                 className="w-full bg-[#9797e4] hover:bg-[#4f4f7f] transition p-3 rounded text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                // onClick={handlePurchase}
                 onClick={checkValidPurchaseAmount}
                 disabled={
                   isProcessing ||
@@ -725,16 +740,25 @@ const WalletConnect = () => {
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <BinancePaymentMain
-                  amount={Number(purchaseAmount)}
-                  walletType={walletType}
-                  onSuccess={handlePurchase}
-                  onFailure={() => setShowPaymentModal(false)}
-                />
+                {selectedToken === "bnb" ? (
+                  <BinancePaymentMain
+                    amount={Number(purchaseAmount)}
+                    walletType={walletType}
+                    onSuccess={handlePurchase}
+                    onFailure={() => closeAllModals('error', 'Payment was rejected or failed.')}
+                  />
+                ) : selectedToken === "usdt" ? (
+                  <USDTPaymentMain
+                    amount={Number(purchaseAmount)}
+                    walletType={walletType}
+                    onSuccess={handlePurchase}
+                    onFailure={() => closeAllModals('error', 'Payment was rejected or failed.')}
+                  />
+                ) : null}
                 <div className="mt-6 w-full">
                   <button
                     className="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-3 px-4 rounded-lg transition-colors"
-                    onClick={() => setShowPaymentModal(false)}
+                    onClick={() => closeAllModals('error', 'Payment modal closed.')}
                   >
                     Close
                   </button>
@@ -745,6 +769,7 @@ const WalletConnect = () => {
         </div>
       )}
     </div>
+
   );
 };
 
