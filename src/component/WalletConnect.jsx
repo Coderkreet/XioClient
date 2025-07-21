@@ -390,7 +390,7 @@ const WalletConnect = () => {
       if (res.success) {
         setPurchaseSuccess("Purchase successful!");
         setPurchaseAmount("");
-        closeAllModals('success', `You have successfully purchased ${getTokenAmount()} XPFI Coin.`);
+        closeAllModals('success', `You have successfully purchased ${getTokenAmount()} XIO Coin.`);
       } else {
         setPurchaseError(res.message || "Purchase failed.");
         closeAllModals('error', res.message || "Purchase failed.");
