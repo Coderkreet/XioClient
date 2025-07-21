@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { Axios } from "axios";
 import { backendConfig } from "../content/MainContent";
 
 const apiURL = backendConfig.base + "/admin";
@@ -911,6 +911,34 @@ export async function getAllHeaderContent() {
       withCredentials: true,
     }
   );
+  return response?.data;
+}
+
+
+export async function getXioData() {
+    const response = await axios.get(`${LendingApiURL}/landingpage/get-xio-data`,
+       {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    }
+    );
+  
+    return response?.data;
+  }
+
+
+  export async function purchaseXioCoin(payload) {
+  const response = await axios.post(`${LendingApiURL}/landingpage/purchase-xio-coin`, payload,
+     {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    }
+  );
+  console.log(response);
   return response?.data;
 }
 
