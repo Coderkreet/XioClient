@@ -1,275 +1,25 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import Swal from "sweetalert2";
-// import { SSButton } from "../UI/Buttons";
-// import { useDispatch } from "react-redux";
-// import { setLoading } from "../../redux/slice/loadingSlice";
 
-const USDT_ADDRESS = "0xa1eaB5F255DD77fED0D8ea81748422ca7ab0eDc4";
-const USDT_ABI = [
-  "function allowance(address owner, address spender) view returns (uint256)",
-  "function approve(address spender, uint256 amount) returns (bool)",
-  "function transfer(address to, uint256 amount) returns (bool)",
-  "function balanceOf(address account) view returns (uint256)",
-  "function decimals() view returns (uint8)",
-];
-
-// eslint-disable-next-line react/prop-types
 const BinancePaymentMain = ({ amount, onSuccess, onFailure, walletType }) => {
-  // const userInfo = useSelector((state) => state?.userInfo?.userInfo);
-
-  const [USDTAmount, setUSDTAmount] = useState(0);
+  const [BNBAmount, setBNBAmount] = useState(0);
   const [walletConnected, setWalletConnected] = useState(false);
-  // const dispatch = useDispatch();
-  const [recipientAddress, setRecipientAddress] = useState(
-    import.meta.env.VITE_PAYMENT_ADDRESS
-  );
+  const [recipientAddress, setRecipientAddress] = useState(import.meta.env.VITE_PAYMENT_ADDRESS);
+
   useEffect(() => {
     setRecipientAddress(import.meta.env.VITE_PAYMENT_ADDRESS);
   }, []);
 
-  console.log("Recipient Address:", recipientAddress);
-
   useEffect(() => {
     if (!amount) return;
-    setUSDTAmount(amount);
+    setBNBAmount(amount);
   }, [amount]);
 
   const handleConnectWallet = async () => {
     try {
-      if (window.ethereum) {
-        if (walletType === "safepal") {
-          const isSafePal =
-            window.ethereum.isSafePal ||
-            navigator.userAgent.toLowerCase().includes("safepal");
-          if (!isSafePal) {
-            throw new Error("Please use SafePal wallet.");
-          }
-        }
-        if (walletType === "metamask") {
-          const isMetaMask = window.ethereum.isMetaMask;
-          if (!isMetaMask) {
-            throw new Error("Please use MetaMask wallet.");
-          }
-        }
-        if (walletType === "trustwallet") {
-          const isTrustWallet = window.ethereum.isTrust;
-          if (!isTrustWallet) {
-            throw new Error("Please use Trust Wallet.");
-          }
-        }
-        await window.ethereum.request({ method: "eth_requestAccounts" });
-        try {
-          await window.ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: "0x38" }],
-          });
-        } catch (switchError) {
-          if (switchError.code === 4902) {
-            try {
-              await window.ethereum.request({
-                method: "wallet_addEthereumChain",
-                params: [
-                  {
-                    chainId: "0x38",
-                    chainName: "Binance Smart Chain",
-                    nativeCurrency: {
-                      name: "BNB",
-                      symbol: "BNB",
-                      decimals: 18,
-                    },
-                    rpcUrls: ["https://bsc-dataseed1.binance.org/"],
-                    blockExplorerUrls: ["https://bscscan.com/"],
-                  },
-                ],
-              });
-            } catch (addError) {
-              console.error("Error adding BSC network:", addError);
-              throw new Error("Failed to add BSC network");
-            }
-          } else {
-            throw switchError;
-          }
-        }
+      if (!window.ethereum) throw new Error("Wallet is not installed.");
 
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const userAddress = await signer.getAddress();
-        console.log("Connected wallet address:", userAddress);
-
-        setWalletConnected(true);
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Connection Failed",
-          text: "Wallet is not installed.",
-        });
-        throw new Error("Wallet is not installed.");
-      }
-    } catch (error) {
-      console.error("Error connecting wallet:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Connection Failed",
-        text: error.message || "Failed to connect wallet. Please try again.",
-      });
-    }
-  };
-
-  // const handleConnectAndPayment = async () => {
-  //   try {
-  //     // dispatch(setLoading(true));
-
-  //     // Step 1: Connect to the wallet
-  //     if (window.ethereum) {
-  //       if (walletType === "safepal") {
-  //         const isSafePal =
-  //           window.ethereum.isSafePal ||
-  //           navigator.userAgent.toLowerCase().includes("safepal");
-  //         if (!isSafePal) {
-  //           throw new Error("Please use SafePal wallet.");
-  //         }
-  //       }
-  //       if (walletType === "metamask") {
-  //         const isMetaMask = window.ethereum.isMetaMask;
-  //         if (!isMetaMask) {
-  //           throw new Error("Please use MetaMask wallet.");
-  //         }
-  //       }
-  //       if (walletType === "trustwallet") {
-  //         const isTrustWallet = window.ethereum.isTrust;
-  //         if (!isTrustWallet) {
-  //           throw new Error("Please use Trust Wallet.");
-  //         }
-  //       }
-  //       await window.ethereum.request({ method: "eth_requestAccounts" });
-
-  //       try {
-  //         await window.ethereum.request({
-  //           method: "wallet_switchEthereumChain",
-  //           params: [{ chainId: "0x38" }],
-  //         });
-  //       } catch (switchError) {
-  //         if (switchError.code === 4902) {
-  //           try {
-  //             await window.ethereum.request({
-  //               method: "wallet_addEthereumChain",
-  //               params: [
-  //                 {
-  //                   chainId: "0x38",
-  //                   chainName: "Binance Smart Chain",
-  //                   nativeCurrency: {
-  //                     name: "BNB",
-  //                     symbol: "BNB",
-  //                     decimals: 18,
-  //                   },
-  //                   rpcUrls: ["https://bsc-dataseed1.binance.org/"],
-  //                   blockExplorerUrls: ["https://bscscan.com/"],
-  //                 },
-  //               ],
-  //             });
-  //           } catch (addError) {
-  //             console.error("Error adding BSC network:", addError);
-  //             throw new Error("Failed to add BSC network");
-  //           }
-  //         } else {
-  //           throw switchError;
-  //         }
-  //       }
-
-  //       const provider = new ethers.BrowserProvider(window.ethereum);
-  //       const signer = await provider.getSigner();
-  //       const userAddress = await signer.getAddress();
-  //       console.log("Connected wallet address:", userAddress);
-
-  //       // if (userInfo?.walletAddress !== userAddress) {
-  //       //   dispatch(setLoading(false));
-  //       //   return Swal.fire({
-  //       //     icon: "error",
-  //       //     title: "Connection Failed",
-  //       //     text: "Please connect to the wallet associated with your account.",
-  //       //     timer: 3000,
-  //       //   });
-  //       // }
-  //       setWalletConnected(true);
-
-  //       // Step 2: Payment Handling
-  //       if (!recipientAddress) {
-  //         Swal.fire({
-  //           icon: "error",
-  //           title: "Invalid Address",
-  //           text: "Please enter a valid recipient address",
-  //         });
-  //         return;
-  //       }
-
-  //       const chainId = await window.ethereum.request({
-  //         method: "eth_chainId",
-  //       });
-  //       if (chainId !== "0x38") {
-  //         throw new Error("Please connect to BSC network first");
-  //       }
-
-  //       const usdtContract = new ethers.Contract(
-  //         USDT_ADDRESS,
-  //         USDT_ABI,
-  //         signer
-  //       );
-
-  //       try {
-  //         const decimals = await usdtContract.decimals();
-  //         console.log(`Token decimals: ${decimals}`);
-  //       } catch (error) {
-  //         console.error("Error fetching USDT decimals:", error);
-  //         throw new Error("Invalid USDT contract on BSC network");
-  //       }
-
-  //       const balance = await usdtContract.balanceOf(userAddress);
-  //       const amountInUSDT = ethers.parseUnits(USDTAmount.toString(), 18);
-
-  //       if (balance < amountInUSDT) {
-  //         throw new Error("Insufficient USDT balance");
-  //       }
-
-  //       const tx = await usdtContract.transfer(recipientAddress, amountInUSDT);
-  //       await tx.wait();
-  //       console.log("Transaction hash:", tx.hash);
-  //       console.log(tx);
-
-  //       // await transactionHandler({ txResponse: tx, amount: amount , packageId });
-  //       await onSuccess({
-  //         txResponse: tx,
-  //         amount,
-  //         recipientAddress,
-  //         userAddress,
-  //       });
-  //     } else {
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "Connection Failed",
-  //         text: "Wallet is not installed.",
-  //       });
-  //       throw new Error("Wallet is not installed.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error during wallet connection or payment:", error);
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Operation Failed",
-  //       text:
-  //         error.message ||
-  //         "Failed to connect wallet or complete payment. Please try again.",
-  //     });
-  //     onFailure();
-  //   } finally {
-  //     // dispatch(setLoading(false));
-  //   }
-  // };
-
-
-  const handleConnectAndPayment = async () => {
-  try {
-    if (window.ethereum) {
       // Wallet type check
       if (walletType === "safepal" && !window.ethereum.isSafePal && !navigator.userAgent.toLowerCase().includes("safepal")) {
         throw new Error("Please use SafePal wallet.");
@@ -283,6 +33,7 @@ const BinancePaymentMain = ({ amount, onSuccess, onFailure, walletType }) => {
 
       await window.ethereum.request({ method: "eth_requestAccounts" });
 
+      // Ensure BSC network
       try {
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
@@ -292,13 +43,15 @@ const BinancePaymentMain = ({ amount, onSuccess, onFailure, walletType }) => {
         if (switchError.code === 4902) {
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
-            params: [{
-              chainId: "0x38",
-              chainName: "Binance Smart Chain",
-              nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
-              rpcUrls: ["https://bsc-dataseed1.binance.org/"],
-              blockExplorerUrls: ["https://bscscan.com/"]
-            }]
+            params: [
+              {
+                chainId: "0x38",
+                chainName: "Binance Smart Chain",
+                nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
+                rpcUrls: ["https://bsc-dataseed1.binance.org/"],
+                blockExplorerUrls: ["https://bscscan.com/"],
+              },
+            ],
           });
         } else {
           throw switchError;
@@ -309,56 +62,69 @@ const BinancePaymentMain = ({ amount, onSuccess, onFailure, walletType }) => {
       const signer = await provider.getSigner();
       const userAddress = await signer.getAddress();
 
-      setWalletConnected(true);
+      
 
-      // Validate recipient
+      console.log("Connected wallet address:", userAddress);
+      setWalletConnected(true);
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Connection Failed",
+        text: error.message || "Failed to connect wallet. Please try again.",
+      });
+    }
+  };
+
+  const handleConnectAndPayment = async () => {
+    try {
+      if (!window.ethereum) throw new Error("Wallet is not installed.");
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const userAddress = await signer.getAddress();
+
       if (!recipientAddress || !ethers.isAddress(recipientAddress)) {
         throw new Error("Invalid recipient address");
       }
 
-      // Convert BNB amount to wei
-      const value = ethers.parseEther(USDTAmount.toString()); // USDTAmount is now BNB amount
+      if (Number(BNBAmount) <= 0) {
+        throw new Error("BNB amount must be greater than 0");
+      }
 
+      const value = ethers.parseEther(BNBAmount.toString());
+
+      console.log("Sending BNB:", value)
       const tx = await signer.sendTransaction({
         to: recipientAddress,
-        value: value,
+        value,
       });
 
       await tx.wait();
-      console.log("BNB Transaction hash:", tx.hash);
 
+      console.log("BNB Transaction hash:", tx.hash);
       await onSuccess({
         txResponse: tx,
-        amount: USDTAmount,
+        amount: BNBAmount,
         recipientAddress,
         userAddress,
       });
-
-    } else {
+    } catch (error) {
+      console.error("Error during BNB payment:", error);
       Swal.fire({
         icon: "error",
-        title: "Connection Failed",
-        text: "Wallet is not installed.",
+        title: "Payment Failed",
+        text: error.message || "Failed to send BNB. Please try again.",
       });
-      throw new Error("Wallet is not installed.");
+      onFailure();
     }
-  } catch (error) {
-    console.error("Error during wallet connection or BNB payment:", error);
-    Swal.fire({
-      icon: "error",
-      title: "Operation Failed",
-      text: error.message || "Failed to send BNB. Please try again.",
-    });
-    onFailure();
-  }
-};
-
+  };
 
   return (
     <div className="w-full space-y-6">
       <div className="text-center">
         <h3 className="text-xl font-semibold text-white mb-2">
-          Pay <span className="text-blue-400">{USDTAmount}</span> USDT
+          Pay <span className="text-blue-400">{BNBAmount}</span> BNB
         </h3>
         <p className="text-slate-400 text-sm">
           Please connect your wallet to proceed with the payment
@@ -391,7 +157,7 @@ const BinancePaymentMain = ({ amount, onSuccess, onFailure, walletType }) => {
                 <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2"/>
                 <path d="M8 12H16M16 12L12 8M16 12L12 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              Pay USDT
+              Pay BNB
             </button>
           </div>
         )}
